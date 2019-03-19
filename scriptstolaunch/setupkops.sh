@@ -3,7 +3,13 @@ aws ec2 describe-availability-zones --region $AWS_DEFAULT_REGION
 export ZONES=$(aws ec2 describe-availability-zones --region $AWS_DEFAULT_REGION | jq -r '.AvailabilityZones[].ZoneName' | tr '\n' ',' | tr -d ' ')
 
 ZONES=${ZONES%?}
+IFS=',' read -r -a array <<< "$ZONES"
+echo "${array[@]:0:3}"
+function join { local IFS="$1"; shift; echo "$*";
+}
+ZONESS=$(join , ${array[@]:0:3})
 
+echo $ZONESS
 echo $ZONES
 
 aws ec2 create-key-pair --key-name devops23 | jq -r '.KeyMaterial' >devops23.pem
@@ -22,8 +28,8 @@ aws s3api create-bucket --bucket $BUCKET_NAME \
 #     --networking kubenet --yes
 
 kops create cluster --name $NAME --master-count 3 --node-count 1 \
-    --node-size t2.small --zones $ZONES \
-    --master-zones $ZONES --ssh-public-key devops23.pub --authorization RBAC \
+    --node-size t2.medium --zones $ZONES \
+    --master-zones $ZONESS --ssh-public-key devops23.pub --authorization RBAC \
     --networking kubenet --yes
 
 until kops get cluster
