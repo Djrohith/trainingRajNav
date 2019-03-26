@@ -28,8 +28,8 @@ aws s3api create-bucket --bucket $BUCKET_NAME \
 #     --networking kubenet --yes
 
 kops create cluster --name $NAME --master-count 3 --node-count 1 \
-    --node-size t2.medium --zones $ZONES \
-    --master-zones $ZONESS --ssh-public-key devops23.pub --authorization RBAC \
+    --node-size t2.large --zones $ZONES \
+    --master-size t2.medium --master-zones $ZONESS --ssh-public-key devops23.pub --authorization RBAC \
     --networking kubenet --yes
 
 until kops get cluster
